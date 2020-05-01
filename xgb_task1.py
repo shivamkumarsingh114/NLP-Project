@@ -110,6 +110,13 @@ def score_model(predicted_lables, y_test):
     score = math.sqrt(mean_squared_error(y_test, result_col))
     return score
 
+def judges_cols(data):
+    for i in range(1,6):
+        data['judge'+str(6-i)] = data['grades'].apply(lambda x : (int)(x%10))
+        data['grades'] = data['grades'].apply(lambda x : (int)(x/10))
+    return data
+
+
 if __name__ == '__main__':
 
     data_path = "training-data/task-1/train_funlines.csv"
