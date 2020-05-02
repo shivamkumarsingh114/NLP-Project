@@ -114,6 +114,7 @@ def judges_cols(data):
     for i in range(1,6):
         data['judge'+str(6-i)] = data['grades'].apply(lambda x : (int)(x%10))
         data['grades'] = data['grades'].apply(lambda x : (int)(x/10))
+    data = data.drop(['grades'], axis=1)
     return data
 
 
@@ -122,10 +123,12 @@ if __name__ == '__main__':
     data_path = "training-data/task-1/train_funlines.csv"
     data = pd.read_csv(data_path)
     data = replace_words(data)
-    data = data.drop(['id', 'original', 'edit', 'grades'], axis=1)
+    data = data.drop(['id', 'original', 'edit'], axis=1)
     data['replaced_col'] = data['replaced_col'].apply(lambda x : clean_text(x))
     data = CountVec(data)
     data=data.drop(['replaced_col'], axis=1)
+    data = judges_cols(data)
+    print(data.head())
     predicted_labels, y_test = training_model(data)
     score = score_model(predicted_labels, y_test)
     print("root mean square error for model: " + str(score))
