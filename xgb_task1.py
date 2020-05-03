@@ -97,7 +97,7 @@ def training_model(data):
     _xgb.fit(X_train, y_train)
     print('\nTraining Ended...\n')
     predicted_labels = _xgb.predict_proba(X_test)
-    pickle.dump(_xgb, open("training-data/task-1/model/xgb_model.sav", 'wb'))
+    pickle.dump(_xgb, open("training-data/task-2/model/xgb_model.sav", 'wb'))
     return predicted_labels, y_test
 
 def score_model(predicted_lables, y_test):

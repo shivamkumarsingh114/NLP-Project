@@ -116,7 +116,7 @@ if __name__ == '__main__':
     data2 = judges_cols(data2,2)
     print(data1.head())
     print(data2.head())
-    _xgb = pickle.load(open("training-data/task-1/model/xgb_model.sav", "rb"))
+    _xgb = pickle.load(open("training-data/task-2/model/xgb_model.sav", "rb"))
     predicted_labels1 = _xgb.predict_proba(data1)
     predicted_labels2 = _xgb.predict_proba(data2)
     result1 = return_predicted_col(predicted_labels1)
