@@ -18,22 +18,6 @@ import math
 import re
 import pickle
 
-_xgb = XGBClassifier(
-                      max_depth=7,
-                      learning_rate=0.375,
-                      n_estimators=110,
-                      gamma=0,
-                      reg_alpha =0.1,
-                      objective = 'multi:softprob',
-                      booster='gbtree',
-                      silent=True,
-                      subsample = .8,
-                      colsample_bytree = 0.8,
-                      max_delta_step = 1,
-                      n_jobs=-1,
-                      random_state = 1711
-                      )
-
 def clean_text(text):
     text = text.lower()
     to_remove2 = "[!”#$%&’()*+,-./:;<=>?@[\]^_`{|}~]:"
@@ -80,57 +64,70 @@ def CountVec(data):
     del data_count, data_svd
     return data
 
-def replace_words(data):
+def replace_words1(data):
     regex = re.compile("<(.*?)/>")
     data['replaced_col'] = ""
     for i in range(data.shape[0]):
-        data.replaced_col[i] = re.sub(regex, data.edit[i], data.original[i])
+        data.replaced_col[i] = re.sub(regex, data.edit1[i], data.original1[i])
     return data
 
-def training_model(data):
-    train_labels = data['meanGrade']
-    data = data.drop(['meanGrade'], axis = 1)
-    print('\nModel Training...\n')
-    seed = 7
-    test_size = 0.20
-    X_train, X_test, y_train, y_test = train_test_split(data, train_labels, test_size=test_size, random_state=seed)
-    _xgb.fit(X_train, y_train)
-    print('\nTraining Ended...\n')
-    predicted_labels = _xgb.predict_proba(X_test)
-    pickle.dump(_xgb, open("training-data/task-1/model/xgb_model.sav", 'wb'))
-    return predicted_labels, y_test
+def replace_words2(data):
+    regex = re.compile("<(.*?)/>")
+    data['replaced_col'] = ""
+    for i in range(data.shape[0]):
+        data.replaced_col[i] = re.sub(regex, data.edit2[i], data.original2[i])
+    return data
 
-def score_model(predicted_lables, y_test):
+def judges_cols(data,n):
+    for i in range(1,6):
+        data['judge'+str(6-i)] = data['grades'+str(n)].apply(lambda x : (int)(x%10))
+        data['grades'+str(n)] = data['grades'+str(n)].apply(lambda x : (int)(x/10))
+    data = data.drop(['grades'+str(n)], axis=1)
+    return data
+
+def return_predicted_col(predicted_labels):
     col =[]
-    for i in range(predicted_lables.shape[1]):
+    for i in range(predicted_labels.shape[1]):
       col.append(str(i))
     result = pd.DataFrame(data = predicted_labels, columns = col )
     aa = result.idxmax(axis=1)
     aa=aa.to_frame()
     result_col = aa.values
     result_col = result_col.astype(int)
-    score = math.sqrt(mean_squared_error(y_test, result_col))
-    return score
-
-def judges_cols(data):
-    for i in range(1,6):
-        data['judge'+str(6-i)] = data['grades'].apply(lambda x : (int)(x%10))
-        data['grades'] = data['grades'].apply(lambda x : (int)(x/10))
-    data = data.drop(['grades'], axis=1)
-    return data
-
+    return result_col
 
 if __name__ == '__main__':
 
-    data_path = "training-data/task-1/train_funlines.csv"
+    data_path = "training-data/task-2/train_funlines.csv"
     data = pd.read_csv(data_path)
-    data = replace_words(data)
-    data = data.drop(['id', 'original', 'edit'], axis=1)
-    data['replaced_col'] = data['replaced_col'].apply(lambda x : clean_text(x))
-    data = CountVec(data)
-    data=data.drop(['replaced_col'], axis=1)
-    data = judges_cols(data)
-    print(data.head())
-    predicted_labels, y_test = training_model(data)
-    score = score_model(predicted_labels, y_test)
-    print("root mean square error for model: " + str(score))
+    data1 = data[['original1', 'edit1', 'grades1']].copy()
+    data2 = data[['original2', 'edit2', 'grades2']].copy()
+    data1 = replace_words1(data1)
+    data2 = replace_words2(data2)
+    data1 = data1.drop(['original1', 'edit1'], axis=1)
+    data2 = data2.drop(['original2', 'edit2'], axis=1)
+    data1['replaced_col'] = data1['replaced_col'].apply(lambda x : clean_text(x))
+    data2['replaced_col'] = data2['replaced_col'].apply(lambda x : clean_text(x))
+    data1 = CountVec(data1)
+    data2 = CountVec(data2)
+    data1=data1.drop(['replaced_col'], axis=1)
+    data2=data2.drop(['replaced_col'], axis=1)
+    data1 = judges_cols(data1,1)
+    data2 = judges_cols(data2,2)
+    print(data1.head())
+    print(data2.head())
+    _xgb = pickle.load(open("training-data/task-1/model/xgb_model.sav", "rb"))
+    predicted_labels1 = _xgb.predict_proba(data1)
+    predicted_labels2 = _xgb.predict_proba(data2)
+    result1 = return_predicted_col(predicted_labels1)
+    result2 = return_predicted_col(predicted_labels2)
+    list =[]
+    for i in range(len(result1)):
+        if result1[i]>result2[i]:
+            list.append(1)
+        elif result2[i]>result1[i]:
+            list.append(2)
+        else: list.append(0)
+
+    score = math.sqrt(mean_squared_error(data.label, list))
+    print(score)
