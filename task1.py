@@ -66,7 +66,6 @@ class LinReg():
             X_o = vectorizer.fit_transform(X["original"], X["edit"])
             linreg = pickle.load(open(filename1, "rb"))
             pred = linreg.predict(X_o)
-
             lis1 = y["meanGrade"].values.tolist()
             print_data = X
             print_data["meanGrade"] = lis1
@@ -75,6 +74,7 @@ class LinReg():
 
             for i in lis2:
                 print("original:",i[0], "Edited Word:", i[1], "Mean Grade:",i[2], "Prediction:",i[3])
+                # print("original:",i[0], "Edited Word:", i[1], "Prediction:",i[2])
             print('Mean squared error: %.2f'
                   % sqrt(mean_squared_error(y, pred)))
 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
             model = args.m
             lr = LinReg(data)
         except:
-            Print("Format is: -ds ./data/file -m ./model/ -tts optional")
+            print("Format is: -ds ./data/file -m ./model/ -tts optional")
         lr.train_data(model, args.tts)
     elif args.te != None:
         try:
@@ -104,7 +104,7 @@ if __name__ == '__main__':
             model = args.m
             lr = LinReg(data)
         except:
-            Print("Format is: -ds ./data/file -m ./model/")
+            print("Format is: -ds ./data/file -m ./model/")
         lr.test_data(model)
     else:
-        Print("Oops, invalid command!")
+        print("Oops, invalid command!")

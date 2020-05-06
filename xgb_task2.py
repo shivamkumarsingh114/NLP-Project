@@ -131,3 +131,4 @@ if __name__ == '__main__':
 
     score = math.sqrt(mean_squared_error(data.label, list))
     print(score)
+    print(list)
