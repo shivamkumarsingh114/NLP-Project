@@ -7,6 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics import f1_score
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_log_error
 import nltk
 from nltk import word_tokenize
 import string
@@ -95,7 +96,7 @@ def training_model(X,y):
     _xgb.fit(X_train, y_train)
     print('\nTraining Ended...\n')
     predicted_labels = _xgb.predict_proba(X_test)
-    # pickle.dump(_xgb, open("training-data/task-2/model/xgb_model.sav", 'wb'))
+    pickle.dump(_xgb, open("training-data/task-2/model/xgb_word2vec_model.sav", 'wb'))
     return predicted_labels, y_test
 
 def score_model(predicted_lables, y_test):
@@ -107,7 +108,7 @@ def score_model(predicted_lables, y_test):
     aa=aa.to_frame()
     result_col = aa.values
     result_col = result_col.astype(int)
-    score = math.sqrt(mean_squared_error(y_test, result_col))
+    score = mean_squared_log_error(y_test, result_col)
     return score
 
 if __name__ == '__main__':
@@ -122,4 +123,4 @@ if __name__ == '__main__':
     y = data['meanGrade']
     predicted_labels, y_test = training_model(X,y)
     score = score_model(predicted_labels, y_test)
-    print(score)
+    print("mean square log error for model: " + str(score))

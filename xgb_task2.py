@@ -7,6 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics import f1_score
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_log_error
 import nltk
 from nltk import word_tokenize
 import string
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     data2 = judges_cols(data2,2)
     print(data1.head())
     print(data2.head())
-    _xgb = pickle.load(open("training-data/task-2/model/xgb_model.sav", "rb"))
+    _xgb = pickle.load(open("training-data/task-2/model/xgb_tfidf_model.sav", "rb"))
     predicted_labels1 = _xgb.predict_proba(data1)
     predicted_labels2 = _xgb.predict_proba(data2)
     result1 = return_predicted_col(predicted_labels1)
@@ -129,6 +130,5 @@ if __name__ == '__main__':
             list.append(2)
         else: list.append(0)
 
-    score = math.sqrt(mean_squared_error(data.label, list))
-    print(score)
-    print(list)
+    score = mean_squared_log_error(data.label, list)
+    print("mean square log error for model: " + str(score))
